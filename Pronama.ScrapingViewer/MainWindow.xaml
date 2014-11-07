@@ -1,0 +1,28 @@
+﻿<Window
+	x:Class="Pronama.ScrapingViewer.MainWindow"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:pronama="clr-namespace:Pronama.ScrapingViewer"
+	Title="MainWindow"
+	Height="350"
+	Width="525"
+	DataContext="{DynamicResource viewModel}">	<!-- ビューモデルのインスタンスを生成して、DataContextプロパティに設定するよ -->
+	
+	<Window.Resources>
+		<!-- ビューモデルクラスに「viewModel」と名前を付けて、XAMLから参照出来るようにする定義だよ -->
+		<pronama:ScrapingViewerViewModel x:Key="viewModel" />
+	</Window.Resources>
+	
+	<DockPanel>
+		<!-- 実行可能プロパティをバインディングして、ボタンのクリックイベントを、FireLoadに伝達するよ -->
+		<Button DockPanel.Dock="Top" Content="プロ生ちゃん！" IsEnabled="{Binding IsReady}" Command="{Binding FireLoad}" />
+
+		<ListBox ItemsSource="{Binding Images}">	<!-- ビューモデルのImagesプロパティとバインディングするよ -->
+			<ListBox.ItemTemplate>	<!-- リストボックスの一つ一つの要素が、この中のテンプレートで再現されるよ -->
+				<DataTemplate>
+					<Image Source="{Binding ImageData}" />	<!-- ImageViewModel.ImageDataプロパティとバインディングするよ -->
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+	</DockPanel>
+</Window>
