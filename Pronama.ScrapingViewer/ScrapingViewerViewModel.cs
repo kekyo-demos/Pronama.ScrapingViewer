@@ -1,19 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Xml.Linq;
-using Sgml;
 
 namespace Pronama.ScrapingViewer
 {
@@ -106,40 +96,6 @@ namespace Pronama.ScrapingViewer
 		public event PropertyChangedEventHandler PropertyChanged;
 		#endregion
 
-		#region FetchHtmlFromUrlAsync
-		/// <summary>
-		/// 指定されたURLからHTMLをダウンロードしてXElementとして取得する、非同期メソッドです。
-		/// </summary>
-		/// <param name="url">URL</param>
-		/// <returns>XElementの結果を返すタスク</returns>
-		private static async Task<XElement> FetchHtmlFromUrlAsync(Uri url)
-		{
-			// HttpClientを使って非同期でダウンロードします。
-			using (var httpClient = new HttpClient())
-			{
-				// プロ生ちゃんサイトの壁紙コーナーから非同期でダウンロードするよ
-				using (var stream = await httpClient.GetStreamAsync(url).
-					ConfigureAwait(false))	// ←この後の処理をワーカースレッドで実行するおまじない
-				{
-					using (var tr = new StreamReader(stream, Encoding.UTF8, true))
-					{
-						using (var sgmlReader = new SgmlReader(tr)
-							{
-								CaseFolding = CaseFolding.ToLower,	// タグ名とか、常に小文字にするよ
-								DocType = "HTML",	// 常にHTMLとして読み取るよ
-								IgnoreDtd = true,	// DTDを無視するよ
-								WhitespaceHandling = false	// 空白を無視するよ
-							})
-						{
-							// SgmlReaderを使って、XElementに変換！
-							return XElement.Load(sgmlReader);
-						}
-					}
-				}
-			}
-		}
-		#endregion
-
 		#region OnFireLoad
 		/// <summary>
 		/// コマンド（ビューのボタン）の実行時に、ここに遷移します。
@@ -152,11 +108,43 @@ namespace Pronama.ScrapingViewer
 			try
 			{
 				// プロ生ちゃん壁紙サイトから、HTMLを非同期でダウンロードするよ
-				var html = await FetchHtmlFromUrlAsync(wallpaperUrl_);
+				var document = await Utilities.FetchHtmlFromUrlAsync(wallpaperUrl_);
 
+				// LINQで抽出しよう！ ターゲットは...
+				// 「html→body→div(container)→div(row)→div(hl_links)→div→a(liimagelink)→img」
+				// for文でいちいち回していると大変だけど、LINQなら超簡単！ 直線的に書くだけだよ。
+				var urls =
+					from html in document.Elements("html")									// htmlタグを全部抽出（1コだけ）
+					from body in html.Elements("body")										// html配下のbodyタグを全部抽出（1コだけ）
+					from divContainer in body.Elements("div")								// body配下のdivタグを全部抽出
+					where Utilities.SafeGetAttribute(divContainer, "class") == "container"	// 上のdivタグに「class="container"」があれば、次の式へ
+					from divRow in divContainer.Elements("div")								// 上のdiv配下のdivタグを全部抽出
+					where Utilities.SafeGetAttribute(divRow, "class") == "row"				// 上のdivタグに「class="row"」があれば、次へ
+					from divHlLinks in divRow.Elements("div")								// 上のdiv配下のdivタグを全部抽出
+					where Utilities.SafeGetAttribute(divHlLinks, "id") == "hl_links"		// 上のdivタグに「id="hl_links"」があれば、次へ（ここまで、ページに変更がなければどれも1コだけ取れるはず）
+					from div in divHlLinks.Elements("div")									// 上のdiv配下のdivタグを全部抽出（このdivタグはチェックしないよ）
+					from a in div.Elements("a")												// 上のdiv配下のaタグを全部抽出
+					where
+						(Utilities.SafeGetAttribute(a, "class") == "liimagelink") &&		// 上のaタグに「class="liimagelink"」があり、
+						(a.Elements("img").Any() == true)									// かつ、aタグ配下に一つ以上imgタグがあれば、次へ
+					let href = Utilities.SafeGetAttribute(a, "href")						// 上のaタグの「href="・・・"」を取得するよ
+					let url = Utilities.ParseUrl(wallpaperUrl_, href)						// Uriクラスに変換してみる
+					where url != null														// 変換出来たら
+					select url;																// 変換したURLを返すよ
+
+				// ザックザックと全部非同期でダウンロードしちゃう！
+				foreach (var url in urls)
+				{
+					// URLを指定してダウンロードするよ
+					var image = await Utilities.FetchImageFromUrlAsync(url);
+
+					// コレクションに追加すれば、データバインディングで自動的に表示される！
+					this.Images.Add(new ImageViewModel { ImageData = image });
+				}
 			}
 			finally
 			{
+				// 全部終わったら、準備完了状態に戻すよ
 				this.IsReady = true;
 			}
 		}

@@ -67,6 +67,7 @@
     </ApplicationDefinition>
     <Compile Include="DelegatedCommand.cs" />
     <Compile Include="ScrapingViewerViewModel.cs" />
+    <Compile Include="Utilities.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

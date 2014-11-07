@@ -17,10 +17,14 @@
 		<!-- 実行可能プロパティをバインディングして、ボタンのクリックイベントを、FireLoadに伝達するよ -->
 		<Button DockPanel.Dock="Top" Content="プロ生ちゃん！" IsEnabled="{Binding IsReady}" Command="{Binding FireLoad}" />
 
-		<ListBox ItemsSource="{Binding Images}">	<!-- ビューモデルのImagesプロパティとバインディングするよ -->
+		<ListBox ScrollViewer.CanContentScroll="False" ItemsSource="{Binding Images}">	<!-- ビューモデルのImagesプロパティとバインディングするよ -->
 			<ListBox.ItemTemplate>	<!-- リストボックスの一つ一つの要素が、この中のテンプレートで再現されるよ -->
 				<DataTemplate>
-					<Image Source="{Binding ImageData}" />	<!-- ImageViewModel.ImageDataプロパティとバインディングするよ -->
+					<!-- Widthの式はちょっといい加減だけど、イメージを横幅に合わせるよ -->
+					<Image
+						Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBox}}, Path=ActualWidth}"
+						RenderOptions.BitmapScalingMode="HighQuality"
+						Source="{Binding ImageData}" />	<!-- ImageViewModel.ImageDataプロパティとバインディングするよ -->
 				</DataTemplate>
 			</ListBox.ItemTemplate>
 		</ListBox>
