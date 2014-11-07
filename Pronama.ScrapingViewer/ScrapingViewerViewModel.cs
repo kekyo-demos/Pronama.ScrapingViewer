@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -132,7 +133,18 @@ namespace Pronama.ScrapingViewer
 					where url != null														// 変換出来たら
 					select url;																// 変換したURLを返すよ
 
+#if true
 				// ザックザックと全部非同期でダウンロードしちゃう！
+				await Task.WhenAll(urls.Select(async url =>
+					{
+						// URLを指定してダウンロードするよ
+						var image = await Utilities.FetchImageFromUrlAsync(url);
+
+						// コレクションに追加すれば、データバインディングで自動的に表示される！
+						this.Images.Add(new ImageViewModel { ImageData = image });
+					}));
+#else
+				// シーケンシャルにダウンロードするとどうなるか、試してみて。
 				foreach (var url in urls)
 				{
 					// URLを指定してダウンロードするよ
@@ -141,6 +153,7 @@ namespace Pronama.ScrapingViewer
 					// コレクションに追加すれば、データバインディングで自動的に表示される！
 					this.Images.Add(new ImageViewModel { ImageData = image });
 				}
+#endif
 			}
 			finally
 			{
