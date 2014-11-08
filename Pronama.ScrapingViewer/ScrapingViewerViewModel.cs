@@ -135,7 +135,7 @@ namespace Pronama.ScrapingViewer
 					where url != null														// 変換出来たら
 					select url;																// 変換したURLを返すよ
 
-#if true
+#if false
 				// ザックザックと全部非同期でダウンロードしちゃう！
 				await Task.WhenAll(urls.Select(async url =>
 					{
@@ -146,7 +146,7 @@ namespace Pronama.ScrapingViewer
 						this.Images.Add(new ImageViewModel { ImageData = image });
 					}));
 #else
-				// シーケンシャルにダウンロードするとどうなるか、試してみて。
+				// シーケンシャルにダウンロードするよ。
 				foreach (var url in urls)
 				{
 					// URLを指定してダウンロードするよ
