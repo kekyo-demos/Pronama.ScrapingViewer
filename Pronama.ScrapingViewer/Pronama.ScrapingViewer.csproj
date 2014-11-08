@@ -65,6 +65,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AnimationListBox.cs" />
     <Compile Include="DelegatedCommand.cs" />
     <Compile Include="ScrapingViewerViewModel.cs" />
     <Compile Include="Utilities.cs" />

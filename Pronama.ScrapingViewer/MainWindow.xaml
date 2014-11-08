@@ -17,8 +17,8 @@
 		<!-- 実行可能プロパティをバインディングして、ボタンのクリックイベントを、FireLoadに伝達するよ -->
 		<Button DockPanel.Dock="Top" Content="プロ生ちゃん！" IsEnabled="{Binding IsReady}" Command="{Binding FireLoad}" />
 
-		<ListBox ScrollViewer.CanContentScroll="False" ItemsSource="{Binding Images}">	<!-- ビューモデルのImagesプロパティとバインディングするよ -->
-			<ListBox.ItemTemplate>	<!-- リストボックスの一つ一つの要素が、この中のテンプレートで再現されるよ -->
+		<pronama:AnimationListBox ScrollViewer.CanContentScroll="False" ItemsSource="{Binding Images}">	<!-- ビューモデルのImagesプロパティとバインディングするよ -->
+			<pronama:AnimationListBox.ItemTemplate>	<!-- リストボックスの一つ一つの要素が、この中のテンプレートで再現されるよ -->
 				<DataTemplate>
 					<!-- Widthの式はちょっといい加減だけど、イメージを横幅に合わせるよ -->
 					<Image
@@ -26,7 +26,7 @@
 						RenderOptions.BitmapScalingMode="HighQuality"
 						Source="{Binding ImageData}" />	<!-- ImageViewModel.ImageDataプロパティとバインディングするよ -->
 				</DataTemplate>
-			</ListBox.ItemTemplate>
-		</ListBox>
+			</pronama:AnimationListBox.ItemTemplate>
+		</pronama:AnimationListBox>
 	</DockPanel>
 </Window>

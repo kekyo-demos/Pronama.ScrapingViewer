@@ -106,6 +106,8 @@ namespace Pronama.ScrapingViewer
 			// 実行中は準備完了状態を落としておくと、ボタンが無効化されるよ
 			this.IsReady = false;
 
+			this.Images.Clear();
+
 			try
 			{
 				// プロ生ちゃん壁紙サイトから、HTMLを非同期でダウンロードするよ
